@@ -1,0 +1,5 @@
+export { useAutoScroll } from './useAutoScroll'
+export { highlightCode } from './highlighter'
+export { SEVERITY_CONFIG, SEVERITY_ORDER, getSeverityConfig } from './severity'
+export type { SeverityConfig } from './severity'
+export { getRelativeTime, formatDuration, formatTokens } from './formatters'

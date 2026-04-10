@@ -17,17 +17,6 @@
   }
 }
 
-@layer components {
-  .app-region-drag {
-    -webkit-app-region: drag;
-    user-select: none;
-  }
-
-  .app-region-no-drag {
-    -webkit-app-region: no-drag;
-  }
-}
-
 #root {
   height: 100vh;
   display: flex;

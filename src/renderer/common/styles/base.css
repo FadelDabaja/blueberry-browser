@@ -1,0 +1,156 @@
+/* ============================================
+   Blueberry Browser — Shared Design Tokens & Base Styles
+   Imported by all renderer entry points (sidebar, topbar, chat)
+   ============================================ */
+
+/* --- Color Tokens (Light Mode) --- */
+:root {
+  --background: 255 255 255;
+  --foreground: 20 20 20;
+  --card: 255 255 255;
+  --card-foreground: 20 20 20;
+  --popover: 255 255 255;
+  --popover-foreground: 20 20 20;
+  --primary: 30 30 30;
+  --primary-foreground: 250 250 250;
+  --secondary: 245 245 245;
+  --secondary-foreground: 30 30 30;
+  --muted: 245 245 245;
+  --muted-foreground: 115 115 115;
+  --accent: 245 245 245;
+  --accent-foreground: 30 30 30;
+  --destructive: 239 68 68;
+  --destructive-foreground: 250 250 250;
+  --border: 229 229 229;
+  --input: 229 229 229;
+  --ring: 161 161 161;
+  --radius: 0.625rem;
+  --blueberry: 79 70 229;
+  --blueberry-light: 129 140 248;
+
+  /* Semantic status colors */
+  --success: 34 197 94;
+  --success-foreground: 22 101 52;
+  --warning: 234 179 8;
+  --warning-foreground: 133 77 14;
+  --info: 59 130 246;
+  --info-foreground: 29 78 216;
+}
+
+/* --- Color Tokens (Dark Mode) --- */
+.dark {
+  --background: 20 20 20;
+  --foreground: 250 250 250;
+  --card: 20 20 20;
+  --card-foreground: 250 250 250;
+  --popover: 20 20 20;
+  --popover-foreground: 250 250 250;
+  --primary: 250 250 250;
+  --primary-foreground: 30 30 30;
+  --secondary: 40 40 40;
+  --secondary-foreground: 250 250 250;
+  --muted: 40 40 40;
+  --muted-foreground: 185 185 185;
+  --accent: 40 40 40;
+  --accent-foreground: 250 250 250;
+  --destructive: 220 38 38;
+  --destructive-foreground: 250 250 250;
+  --border: 50 50 50;
+  --input: 50 50 50;
+  --ring: 82 82 82;
+  --blueberry: 99 102 241;
+  --blueberry-light: 165 180 252;
+
+  /* Semantic status colors (dark) */
+  --success: 74 222 128;
+  --success-foreground: 134 239 172;
+  --warning: 250 204 21;
+  --warning-foreground: 253 224 71;
+  --info: 96 165 250;
+  --info-foreground: 147 197 253;
+}
+
+/* --- Global Reset --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Global Focus Visible --- */
+:focus-visible {
+  outline: 2px solid rgb(var(--blueberry) / 0.5);
+  outline-offset: 2px;
+}
+
+/* Remove focus outline from elements that handle their own focus styling */
+[data-slot="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* --- Accessibility: Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Custom Scrollbar --- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--muted-foreground) / 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--muted-foreground) / 0.35);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(var(--muted-foreground) / 0.25);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--muted-foreground) / 0.4);
+}
+
+/* Hide scrollbar utility */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* --- Prose Overrides (Markdown) --- */
+.prose pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prose code {
+  word-break: break-all;
+}
+
+.prose p,
+.prose li,
+.prose td,
+.prose th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

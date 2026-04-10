@@ -9,7 +9,7 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-primary text-primary-foreground hover:bg-primary/90",
+                default: "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]",
                 destructive:
                     "bg-destructive text-white hover:brightness-95 active:brightness-90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
                 outline: "border bg-background text-primary hover:border-primary/25",
@@ -47,7 +47,7 @@ const Button = React.forwardRef<
         <Comp
             ref={ref}
             data-slot="button"
-            tabIndex={-1}
+            tabIndex={0}
             className={cn(buttonVariants({ variant, size, className }))}
             {...props}
         />

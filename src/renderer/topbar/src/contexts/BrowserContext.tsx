@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react'
 
 interface TabInfo {
     id: string
@@ -42,8 +42,9 @@ export const useBrowser = () => {
 export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [tabs, setTabs] = useState<TabInfo[]>([])
     const [isLoading, setIsLoading] = useState(false)
+    const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
-    const activeTab = tabs.find(tab => tab.isActive) || null
+    const activeTab = useMemo(() => tabs.find(tab => tab.isActive) || null, [tabs])
 
     const refreshTabs = useCallback(async () => {
         try {
@@ -97,7 +98,7 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
         try {
             await window.topBarAPI.navigateTab(activeTab.id, url)
             // Wait a bit for navigation to start, then refresh tabs to get updated URL
-            setTimeout(() => refreshTabs(), 500)
+            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
         } catch (error) {
             console.error('Failed to navigate:', error)
         } finally {
@@ -110,7 +111,7 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         try {
             await window.topBarAPI.goBack(activeTab.id)
-            setTimeout(() => refreshTabs(), 500)
+            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
         } catch (error) {
             console.error('Failed to go back:', error)
         }
@@ -121,7 +122,7 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         try {
             await window.topBarAPI.goForward(activeTab.id)
-            setTimeout(() => refreshTabs(), 500)
+            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
         } catch (error) {
             console.error('Failed to go forward:', error)
         }
@@ -132,7 +133,7 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         try {
             await window.topBarAPI.reload(activeTab.id)
-            setTimeout(() => refreshTabs(), 500)
+            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
         } catch (error) {
             console.error('Failed to reload:', error)
         }
@@ -156,18 +157,32 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [])
 
-    // Initialize tabs on mount
+    // Initialize tabs on mount + cleanup timeouts
     useEffect(() => {
         refreshTabs()
+        return () => {
+            timeoutRefs.current.forEach(t => clearTimeout(t))
+            timeoutRefs.current = []
+        }
     }, [refreshTabs])
 
-    // Periodic refresh to keep tabs in sync
+    // Listen for tabs-updated events from main process (e.g. target="_blank" opens)
     useEffect(() => {
-        const interval = setInterval(refreshTabs, 2000) // Refresh every 2 seconds
+        window.topBarAPI.onTabsUpdated(() => {
+            refreshTabs()
+        })
+        return () => {
+            window.topBarAPI.removeTabsUpdatedListener()
+        }
+    }, [refreshTabs])
+
+    // Periodic refresh as fallback to keep tabs in sync
+    useEffect(() => {
+        const interval = setInterval(refreshTabs, 5000)
         return () => clearInterval(interval)
     }, [refreshTabs])
 
-    const value: BrowserContextType = {
+    const value = useMemo<BrowserContextType>(() => ({
         tabs,
         activeTab,
         isLoading,
@@ -180,8 +195,8 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
         goForward,
         reload,
         takeScreenshot,
-        runJavaScript
-    }
+        runJavaScript,
+    }), [tabs, activeTab, isLoading, createTab, closeTab, switchTab, refreshTabs, navigateToUrl, goBack, goForward, reload, takeScreenshot, runJavaScript])
 
     return (
         <BrowserContext.Provider value={value}>

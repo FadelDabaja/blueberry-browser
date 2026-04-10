@@ -2,107 +2,79 @@ import React from 'react'
 import { Plus, X } from 'lucide-react'
 import { useBrowser } from '../contexts/BrowserContext'
 import { Favicon } from '../components/Favicon'
-import { TabBarButton } from '../components/TabBarButton'
 import { cn } from '@common/lib/utils'
 
-interface TabItemProps {
-    id: string
+const IS_MAC = navigator.platform.toUpperCase().includes('MAC')
+
+const getFaviconUrl = (url: string) => {
+    try {
+        const domain = new URL(url).hostname
+        return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+    } catch {
+        return null
+    }
+}
+
+const TabPill: React.FC<{
     title: string
     favicon?: string | null
     isActive: boolean
-    isPinned?: boolean
     onClose: () => void
     onActivate: () => void
-}
-
-const TabItem: React.FC<TabItemProps> = ({
-    title,
-    favicon,
-    isActive,
-    isPinned = false,
-    onClose,
-    onActivate
-}) => {
-    const baseClassName = cn(
-        "relative flex items-center h-8 pl-2 pr-1.5 select-none rounded-md",
-        "text-primary group/tab transition-all duration-200 cursor-pointer",
-        "app-region-no-drag", // Make tabs clickable
-        isActive
-            ? "bg-background shadow-tab dark:bg-secondary dark:shadow-none"
-            : "bg-transparent hover:bg-muted/50 dark:hover:bg-muted/30",
-        isPinned ? "w-8 !px-0 justify-center" : ""
-    )
-
-    return (
-        <div className="py-1 px-0.5">
-            <div
-                className={baseClassName}
-                onClick={() => !isActive && onActivate()}
-            >
-                {/* Favicon */}
-                <div className={cn(!isPinned && "mr-2")}>
-                    <Favicon src={favicon} />
-                </div>
-
-                {/* Title (hide for pinned tabs) */}
-                {!isPinned && (
-                    <span className="text-xs truncate max-w-[200px] flex-1">
-                        {title || 'New Tab'}
-                    </span>
-                )}
-
-                {/* Close button (shows on hover) */}
-                {!isPinned && (
-                    <div
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            onClose()
-                        }}
-                        className={cn(
-                            "flex-shrink-0 p-1 rounded-md transition-opacity",
-                            "hover:bg-muted dark:hover:bg-muted/50",
-                            "opacity-0 group-hover/tab:opacity-100",
-                            isActive && "opacity-100"
-                        )}
-                    >
-                        <X className="size-3 text-primary dark:text-primary" />
-                    </div>
-                )}
-            </div>
+}> = ({ title, favicon, isActive, onClose, onActivate }) => (
+    <button
+        onClick={() => !isActive && onActivate()}
+        title={title || 'New Tab'}
+        className={cn(
+            "relative flex items-center gap-1.5 h-7 pl-2 pr-1 rounded-md max-w-[160px] min-w-[60px]",
+            "text-xs select-none cursor-pointer app-region-no-drag group/tab",
+            "transition-colors duration-150",
+            isActive
+                ? "bg-muted dark:bg-secondary text-foreground shadow-tab"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+        )}
+    >
+        <div className="shrink-0">
+            <Favicon src={favicon} className="!size-3.5" />
         </div>
-    )
-}
+        <span className="flex-1 truncate text-left">{title || 'New Tab'}</span>
+        <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); onClose(); } }}
+            aria-label={`Close tab: ${title || 'New Tab'}`}
+            className={cn(
+                "shrink-0 p-1 rounded transition-all",
+                "hover:bg-foreground/10",
+                isActive
+                    ? "opacity-80 hover:opacity-100"
+                    : "opacity-0 group-hover/tab:opacity-100"
+            )}
+        >
+            <X className="size-3" />
+        </span>
+        {isActive && (
+            <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-blueberry" />
+        )}
+    </button>
+)
 
 export const TabBar: React.FC = () => {
-    const { tabs, createTab, closeTab, switchTab, isLoading } = useBrowser()
-
-    const handleCreateTab = () => {
-        createTab('https://www.google.com')
-    }
-
-    // Extract favicon from URL (simplified - you might want to improve this)
-    const getFavicon = (url: string) => {
-        try {
-            const domain = new URL(url).hostname
-            return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
-        } catch {
-            return null
-        }
-    }
+    const { tabs, createTab, closeTab, switchTab } = useBrowser()
 
     return (
-        <div className="flex-1 overflow-x-hidden flex items-center">
-            {/* macOS traffic lights spacing */}
-            <div className="pl-20" />
+        <div className="flex items-center overflow-hidden">
+            {/* Traffic lights spacing only on macOS */}
+            {IS_MAC && <div className="pl-[80px] shrink-0" />}
 
-            {/* Tabs */}
-            <div className="flex-1 overflow-x-auto flex">
+            {/* Tab pills - scrollable */}
+            <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
                 {tabs.map(tab => (
-                    <TabItem
+                    <TabPill
                         key={tab.id}
-                        id={tab.id}
                         title={tab.title}
-                        favicon={getFavicon(tab.url)}
+                        favicon={getFaviconUrl(tab.url)}
                         isActive={tab.isActive}
                         onClose={() => closeTab(tab.id)}
                         onActivate={() => switchTab(tab.id)}
@@ -110,14 +82,17 @@ export const TabBar: React.FC = () => {
                 ))}
             </div>
 
-            {/* Add Tab Button */}
-            <div className="pl-1 pr-2">
-                <TabBarButton
-                    Icon={Plus}
-                    onClick={handleCreateTab}
-                />
-            </div>
+            {/* Add tab button */}
+            <button
+                onClick={() => createTab('https://www.google.com')}
+                aria-label="Open new tab"
+                title="New tab"
+                className="shrink-0 size-6 flex items-center justify-center rounded-md
+                           hover:bg-muted/50 text-muted-foreground hover:text-foreground
+                           transition-colors app-region-no-drag ml-0.5"
+            >
+                <Plus className="size-3.5" />
+            </button>
         </div>
     )
 }
-
