@@ -5,6 +5,15 @@ import { join } from "path";
 import { writeFileSync, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync } from "fs";
 import { randomUUID } from "crypto";
 
+export function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function getReportsDir(): string {
   const dir = join(app.getPath("userData"), "reports");
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -250,15 +259,6 @@ export function listAllReports(): { id: string; title: string; createdAt: string
 }
 
 const UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-
-export function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 /** Delete a report by ID (for IPC/UI use) */
 export function deleteReport(id: string): boolean {
