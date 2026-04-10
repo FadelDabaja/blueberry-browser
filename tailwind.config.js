@@ -45,6 +45,22 @@ module.exports = {
           DEFAULT: "rgb(var(--card) / <alpha-value>)",
           foreground: "rgb(var(--card-foreground) / <alpha-value>)",
         },
+        blueberry: {
+          DEFAULT: "rgb(var(--blueberry) / <alpha-value>)",
+          light: "rgb(var(--blueberry-light) / <alpha-value>)",
+        },
+        success: {
+          DEFAULT: "rgb(var(--success) / <alpha-value>)",
+          foreground: "rgb(var(--success-foreground) / <alpha-value>)",
+        },
+        warning: {
+          DEFAULT: "rgb(var(--warning) / <alpha-value>)",
+          foreground: "rgb(var(--warning-foreground) / <alpha-value>)",
+        },
+        info: {
+          DEFAULT: "rgb(var(--info) / <alpha-value>)",
+          foreground: "rgb(var(--info-foreground) / <alpha-value>)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -52,10 +68,8 @@ module.exports = {
         sm: "calc(var(--radius) - 0.4rem)",
       },
       fontSize: {
+        "caption": ["0.625rem", "0.875rem"],
         "2xs": ["0.625rem", "0.75rem"],
-      },
-      spacing: {
-        4.5: "1.125rem",
       },
       boxShadow: {
         subtle: "0 0 6px rgba(0,0,0,0.06)",
@@ -63,30 +77,31 @@ module.exports = {
         expanded: "0 8px 16px rgba(0,0,0,0.15)",
         chat: "0 10px 40px rgba(0,0,0,0.04)",
       },
+      zIndex: {
+        dropdown: "50",
+        overlay: "100",
+        modal: "200",
+      },
       animation: {
-        "spring-scale": "spring-scale 0.2s ease-in-out forwards",
-        "star-spin": "star-spin 3s ease-in-out infinite",
         "fade-in": "fade-in 0.3s ease-out forwards",
+        "tool-card-in": "tool-card-in 0.25s ease-out forwards",
+        "panel-slide": "panel-slide 0.2s ease-out forwards",
       },
       keyframes: {
-        "spring-scale": {
-          "0%": { transform: "scale(0.95)" },
-          "50%": { transform: "scale(1.02)" },
-          "100%": { transform: "scale(1)" },
-        },
-        "star-spin": {
-          "0%, 50%": { transform: "rotate(0deg)" },
-          "60%": { transform: "rotate(-20deg)" },
-          "65%": { transform: "rotate(-15deg)" },
-          "67%": { transform: "rotate(-20deg)" },
-          "100%": { transform: "rotate(360deg)" },
-        },
         "fade-in": {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "0%": { opacity: "0", transform: "translateY(4px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "tool-card-in": {
+          "0%": { opacity: "0", transform: "translateY(4px) scale(0.98)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "panel-slide": {
+          "0%": { opacity: "0", transform: "translateX(8px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/typography")],
 };

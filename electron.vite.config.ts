@@ -13,6 +13,7 @@ export default defineConfig({
         input: {
           topbar: resolve(__dirname, "src/preload/topbar.ts"),
           sidebar: resolve(__dirname, "src/preload/sidebar.ts"),
+          chat: resolve(__dirname, "src/preload/chat.ts"),
         },
       },
     },
@@ -24,12 +25,12 @@ export default defineConfig({
         input: {
           topbar: resolve(__dirname, "src/renderer/topbar/index.html"),
           sidebar: resolve(__dirname, "src/renderer/sidebar/index.html"),
+          chat: resolve(__dirname, "src/renderer/chat/index.html"),
         },
       },
     },
     resolve: {
       alias: {
-        "@renderer": resolve("src/renderer/src"),
         "@common": resolve("src/renderer/common"),
       },
     },

@@ -31,21 +31,40 @@ const topBarAPI = {
   // Sidebar
   toggleSidebar: () =>
     electronAPI.ipcRenderer.invoke("toggle-sidebar"),
+
+  // Window controls
+  minimizeWindow: () => electronAPI.ipcRenderer.invoke("window-minimize"),
+  maximizeWindow: () => electronAPI.ipcRenderer.invoke("window-maximize"),
+  closeWindow: () => electronAPI.ipcRenderer.invoke("window-close"),
+
+  // Tab update notifications from main process
+  onTabsUpdated: (callback: () => void) => {
+    electronAPI.ipcRenderer.removeAllListeners("tabs-updated");
+    electronAPI.ipcRenderer.on("tabs-updated", () => callback());
+  },
+  removeTabsUpdatedListener: () => {
+    electronAPI.ipcRenderer.removeAllListeners("tabs-updated");
+  },
+
+  // Dark mode
+  sendDarkModeChange: (isDark: boolean) =>
+    electronAPI.ipcRenderer.send("dark-mode-changed", isDark),
+  onDarkModeUpdate: (callback: (isDark: boolean) => void) => {
+    electronAPI.ipcRenderer.removeAllListeners("dark-mode-updated");
+    electronAPI.ipcRenderer.on("dark-mode-updated", (_, isDark) => callback(isDark));
+  },
+  removeDarkModeListener: () => {
+    electronAPI.ipcRenderer.removeAllListeners("dark-mode-updated");
+  },
 };
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("electron", electronAPI);
     contextBridge.exposeInMainWorld("topBarAPI", topBarAPI);
   } catch (error) {
     console.error(error);
   }
 } else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI;
   // @ts-ignore (define in dts)
   window.topBarAPI = topBarAPI;
 }

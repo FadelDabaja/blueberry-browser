@@ -14,8 +14,8 @@ interface ChatResponse {
   cancelled?: boolean;
 }
 
-// Sidebar specific APIs
-const sidebarAPI = {
+// Chat page API — same IPC channels as sidebar so they share the same LLMClient
+const chatPageAPI = {
   // Chat functionality
   sendChatMessage: (request: ChatRequest) =>
     electronAPI.ipcRenderer.invoke("sidebar-chat-message", request),
@@ -102,17 +102,76 @@ const sidebarAPI = {
     electronAPI.ipcRenderer.removeAllListeners("step-progress");
   },
 
+  // Highlight elements on page (no-op for chat page, but keeps API compatible)
+  highlightElements: (_highlights: { selector: string; color: string; label: string }[]) =>
+    Promise.resolve(),
+
+  clearHighlights: () => Promise.resolve(),
+
+  // Page content access (no active tab in chat page)
+  getPageContent: () => Promise.resolve(null),
+  getPageText: () => Promise.resolve(null),
+  getCurrentUrl: () => Promise.resolve(null),
+
+  // Tab information
+  getActiveTabInfo: () => Promise.resolve(null),
+
+  // History
+  getHistory: (search?: string, limit?: number) =>
+    electronAPI.ipcRenderer.invoke("get-history", search, limit),
+  clearHistory: () => electronAPI.ipcRenderer.invoke("clear-history"),
+
+  // Settings
+  getSettings: () => electronAPI.ipcRenderer.invoke("get-settings"),
+  updateSettings: (settings: any) =>
+    electronAPI.ipcRenderer.invoke("update-settings", settings),
+
+  // Navigation (no-op in chat page)
+  navigateToUrl: (_url: string) => Promise.resolve(),
+
+  // Sidebar resize (no-op in chat page)
+  resizeStart: () => Promise.resolve(0),
+  resizeMove: (_deltaX: number) => Promise.resolve(),
+  resizeEnd: () => Promise.resolve(),
+
+  // Page context updates (no-op in chat page)
+  onPageContextUpdated: (_callback: (data: any) => void) => {},
+  removePageContextListener: () => {},
+
+  // Ask user response (from ToolCallCard)
+  respondToQuestion: (questionId: string, response: string) =>
+    electronAPI.ipcRenderer.send("ask-user-response", { questionId, response }),
+
+  // Dark mode
+  sendDarkModeChange: (isDark: boolean) =>
+    electronAPI.ipcRenderer.send("dark-mode-changed", isDark),
+  onDarkModeUpdate: (callback: (isDark: boolean) => void) => {
+    electronAPI.ipcRenderer.removeAllListeners("dark-mode-updated");
+    electronAPI.ipcRenderer.on("dark-mode-updated", (_, isDark) => callback(isDark));
+  },
+  removeDarkModeListener: () => {
+    electronAPI.ipcRenderer.removeAllListeners("dark-mode-updated");
+  },
+
+  // Source citations (web search)
+  onChatSource: (callback: (data: any) => void) => {
+    electronAPI.ipcRenderer.removeAllListeners("chat-source");
+    electronAPI.ipcRenderer.on("chat-source", (_, data) => callback(data));
+  },
+  removeChatSourceListener: () => {
+    electronAPI.ipcRenderer.removeAllListeners("chat-source");
+  },
+
   // Step started
   onStepStarted: (callback: (data: any) => void) => {
     electronAPI.ipcRenderer.removeAllListeners("step-started");
     electronAPI.ipcRenderer.on("step-started", (_, data) => callback(data));
   },
-
   removeStepStartedListener: () => {
     electronAPI.ipcRenderer.removeAllListeners("step-started");
   },
 
-  // Step finished (per-step usage/finishReason from stream)
+  // Step finished (per-step usage from stream)
   onStepFinished: (callback: (data: any) => void) => {
     electronAPI.ipcRenderer.removeAllListeners("step-finished");
     electronAPI.ipcRenderer.on("step-finished", (_, data) => callback(data));
@@ -132,76 +191,18 @@ const sidebarAPI = {
     electronAPI.ipcRenderer.removeAllListeners("stream-finished");
   },
 
-  // Reasoning/thinking output from reasoning models
+  // Reasoning/thinking output
   onChatReasoning: (callback: (data: { messageId: string; text: string }) => void) => {
     electronAPI.ipcRenderer.removeAllListeners("chat-reasoning");
     electronAPI.ipcRenderer.on("chat-reasoning", (_, data) => callback(data));
   },
-
   removeChatReasoningListener: () => {
     electronAPI.ipcRenderer.removeAllListeners("chat-reasoning");
   },
 
-  // Highlight elements on page
-  highlightElements: (highlights: { selector: string; color: string; label: string }[]) =>
-    electronAPI.ipcRenderer.invoke("highlight-elements", highlights),
-
-  clearHighlights: () =>
-    electronAPI.ipcRenderer.invoke("clear-highlights"),
-
-  // Page content access
-  getPageContent: () => electronAPI.ipcRenderer.invoke("get-page-content"),
-  getPageText: () => electronAPI.ipcRenderer.invoke("get-page-text"),
-  getCurrentUrl: () => electronAPI.ipcRenderer.invoke("get-current-url"),
-
-  // Tab information
-  getActiveTabInfo: () => electronAPI.ipcRenderer.invoke("get-active-tab-info"),
-
-  // History
-  getHistory: (search?: string, limit?: number) =>
-    electronAPI.ipcRenderer.invoke("get-history", search, limit),
-  clearHistory: () => electronAPI.ipcRenderer.invoke("clear-history"),
-
-  // Settings
-  getSettings: () => electronAPI.ipcRenderer.invoke("get-settings"),
-  updateSettings: (settings: any) =>
-    electronAPI.ipcRenderer.invoke("update-settings", settings),
-
-  // Navigation from sidebar (e.g. history clicks)
-  navigateToUrl: (url: string) =>
-    electronAPI.ipcRenderer.invoke("sidebar-navigate-to-url", url),
-
-  // Open URL in a new tab (e.g. report links)
+  // Open URL in a new tab
   openNewTab: (url: string) =>
     electronAPI.ipcRenderer.invoke("create-tab", url),
-
-  // Sidebar resize
-  resizeStart: () =>
-    electronAPI.ipcRenderer.invoke("sidebar-resize-start"),
-  resizeMove: (deltaX: number) =>
-    electronAPI.ipcRenderer.invoke("sidebar-resize-move", deltaX),
-  resizeEnd: () =>
-    electronAPI.ipcRenderer.invoke("sidebar-resize-end"),
-
-  // Page context updates
-  onPageContextUpdated: (callback: (data: any) => void) => {
-    electronAPI.ipcRenderer.removeAllListeners("page-context-updated");
-    electronAPI.ipcRenderer.on("page-context-updated", (_, data) => callback(data));
-  },
-
-  removePageContextListener: () => {
-    electronAPI.ipcRenderer.removeAllListeners("page-context-updated");
-  },
-
-  // Source citations (web search)
-  onChatSource: (callback: (data: any) => void) => {
-    electronAPI.ipcRenderer.removeAllListeners("chat-source");
-    electronAPI.ipcRenderer.on("chat-source", (_, data) => callback(data));
-  },
-
-  removeChatSourceListener: () => {
-    electronAPI.ipcRenderer.removeAllListeners("chat-source");
-  },
 
   // Report management
   listReports: () =>
@@ -210,60 +211,22 @@ const sidebarAPI = {
     electronAPI.ipcRenderer.invoke("reports-delete", id),
 
   // Task management
-  listTasks: (filter?: { status?: string; groupId?: string }) =>
+  listTasks: (filter?: { status?: string }) =>
     electronAPI.ipcRenderer.invoke("tasks-list", filter),
   updateTask: (id: string, updates: Record<string, string>) =>
     electronAPI.ipcRenderer.invoke("tasks-update", id, updates),
   deleteTask: (id: string) =>
     electronAPI.ipcRenderer.invoke("tasks-delete", id),
-
-  // Group management
-  listGroups: () =>
-    electronAPI.ipcRenderer.invoke("groups-list"),
-  deleteGroup: (id: string) =>
-    electronAPI.ipcRenderer.invoke("groups-delete", id),
-
-  // Ask user response (from ToolCallCard)
-  respondToQuestion: (questionId: string, response: string) =>
-    electronAPI.ipcRenderer.send("ask-user-response", { questionId, response }),
-
-  // Scroll to a specific highlight overlay on the page
-  scrollToHighlight: (id: string) =>
-    electronAPI.ipcRenderer.invoke("scroll-to-highlight", id),
-
-  // Filter visible highlights by category
-  filterHighlights: (categories: string[]) =>
-    electronAPI.ipcRenderer.invoke("filter-highlights", categories),
-
-  // Listen for highlight click events from the page
-  onHighlightClicked: (callback: (data: { id: string; category: string; severity: string; label: string; description: string; fix: string }) => void) => {
-    electronAPI.ipcRenderer.removeAllListeners("highlight-clicked");
-    electronAPI.ipcRenderer.on("highlight-clicked", (_, data) => callback(data));
-  },
-
-  removeHighlightClickedListener: () => {
-    electronAPI.ipcRenderer.removeAllListeners("highlight-clicked");
-  },
-
-  // Dark mode
-  sendDarkModeChange: (isDark: boolean) =>
-    electronAPI.ipcRenderer.send("dark-mode-changed", isDark),
-  onDarkModeUpdate: (callback: (isDark: boolean) => void) => {
-    electronAPI.ipcRenderer.removeAllListeners("dark-mode-updated");
-    electronAPI.ipcRenderer.on("dark-mode-updated", (_, isDark) => callback(isDark));
-  },
-  removeDarkModeListener: () => {
-    electronAPI.ipcRenderer.removeAllListeners("dark-mode-updated");
-  },
 };
 
+// Expose as sidebarAPI so shared components work without changes
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("sidebarAPI", sidebarAPI);
+    contextBridge.exposeInMainWorld("sidebarAPI", chatPageAPI);
   } catch (error) {
     console.error(error);
   }
 } else {
   // @ts-ignore (define in dts)
-  window.sidebarAPI = sidebarAPI;
+  window.sidebarAPI = chatPageAPI;
 }

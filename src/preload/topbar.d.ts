@@ -1,4 +1,4 @@
-import { ElectronAPI } from "@electron-toolkit/preload";
+// topbar.d.ts — typed preload API
 
 interface TabInfo {
   id: string;
@@ -28,11 +28,24 @@ interface TopBarAPI {
 
   // Sidebar
   toggleSidebar: () => Promise<void>;
+
+  // Window controls
+  minimizeWindow: () => Promise<void>;
+  maximizeWindow: () => Promise<void>;
+  closeWindow: () => Promise<void>;
+
+  // Tab update notifications
+  onTabsUpdated: (callback: () => void) => void;
+  removeTabsUpdatedListener: () => void;
+
+  // Dark mode
+  sendDarkModeChange: (isDark: boolean) => void;
+  onDarkModeUpdate: (callback: (isDark: boolean) => void) => void;
+  removeDarkModeListener: () => void;
 }
 
 declare global {
   interface Window {
-    electron: ElectronAPI;
     topBarAPI: TopBarAPI;
   }
 }
