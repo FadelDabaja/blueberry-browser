@@ -48,7 +48,6 @@ lerna-debug.log*
 *.sw?
 
 # OS generated files
-.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
@@ -134,3 +133,11 @@ logs/
 *.pem
 *.key
 *.cert
+
+# electron-vite temp files
+electron.vite.config.*.mjs
+
+# npm lockfile (pnpm project)
+package-lock.json
+/docs
+/.claude
