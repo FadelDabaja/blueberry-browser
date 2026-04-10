@@ -76,11 +76,11 @@ const HighlightedCodeBlock: React.FC<{ code: string; lang: string }> = ({ code, 
             {/* Code body */}
             {html ? (
                 <div
-                    className="overflow-x-auto text-sm [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:p-3 [&_code]:!bg-transparent"
+                    className="overflow-x-auto overflow-y-auto max-h-[400px] text-sm [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:p-3 [&_code]:!bg-transparent"
                     dangerouslySetInnerHTML={{ __html: html }}
                 />
             ) : (
-                <pre className="p-3 text-sm overflow-x-auto bg-muted/20">
+                <pre className="p-3 text-sm overflow-x-auto overflow-y-auto max-h-[400px] bg-muted/20">
                     <code>{code}</code>
                 </pre>
             )}
@@ -305,6 +305,24 @@ export const SuggestedPrompts: React.FC<{ onSelect: (text: string) => void }> = 
     )
 }
 
+// Relative time display
+const RelativeTime: React.FC<{ timestamp: number }> = ({ timestamp }) => {
+    const [text, setText] = useState(() => formatRelativeTime(timestamp))
+    useEffect(() => {
+        const interval = setInterval(() => setText(formatRelativeTime(timestamp)), 60_000)
+        return () => clearInterval(interval)
+    }, [timestamp])
+    return <span className="text-[10px] text-muted-foreground/50">{text}</span>
+}
+
+function formatRelativeTime(timestamp: number): string {
+    const diff = Math.floor((Date.now() - timestamp) / 1000)
+    if (diff < 60) return 'just now'
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+    return `${Math.floor(diff / 86400)}d ago`
+}
+
 // Conversation Turn Component
 export const ConversationTurnComponent: React.FC<{
     turn: ConversationTurn
@@ -322,6 +340,11 @@ export const ConversationTurnComponent: React.FC<{
     return (
         <div className="pt-6 flex flex-col gap-4">
             {turn.user && <UserMessage content={turn.user.content} />}
+            {turn.user?.timestamp && (
+                <div className="flex justify-end pr-1">
+                    <RelativeTime timestamp={turn.user.timestamp} />
+                </div>
+            )}
             {hasAssistant && hasContent ? (
                 // Normal assistant message with content (may also have tools/audit)
                 <AssistantMessage

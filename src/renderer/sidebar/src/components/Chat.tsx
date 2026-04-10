@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { Plus, AlertCircle } from 'lucide-react'
+import React, { useMemo, useEffect } from 'react'
+import { Plus, AlertCircle, ChevronDown } from 'lucide-react'
 import { useChat } from '../contexts/ChatContext'
 import { Button } from '@common/components/Button'
 import { PageContextBar } from './PageContextBar'
@@ -37,7 +37,14 @@ export const Chat: React.FC = () => {
         error,
         setError,
     } = useChat()
-    const { scrollRef, containerRef } = useAutoScroll(messages, isLoading)
+    const { scrollRef, containerRef, isAtBottom, scrollToBottom } = useAutoScroll(messages, isLoading)
+
+    // Auto-dismiss error after 8 seconds
+    useEffect(() => {
+        if (!error) return
+        const timer = setTimeout(() => setError(null), 8000)
+        return () => clearTimeout(timer)
+    }, [error])
 
     const handleHighlight = async (highlights: { selector: string; color: string; label: string }[]) => {
         await highlightElements(highlights)
@@ -89,7 +96,16 @@ export const Chat: React.FC = () => {
             <PageContextBar />
             <AgentActivityPanel activity={stepProgress} totalTokens={totalTokensUsed} contextLimit={contextLimit} />
 
-            <div className="flex-1 overflow-y-auto overflow-x-hidden" ref={containerRef}>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden relative" ref={containerRef}>
+                {!isAtBottom && messages.length > 0 && (
+                    <button
+                        onClick={scrollToBottom}
+                        className="sticky bottom-4 left-[calc(100%-3.5rem)] z-10 flex items-center justify-center size-8 rounded-full bg-background/80 backdrop-blur border border-border/60 shadow-md hover:bg-muted transition-all animate-fade-in"
+                        aria-label="Scroll to bottom"
+                    >
+                        <ChevronDown className="size-4 text-muted-foreground" />
+                    </button>
+                )}
                 <div className="h-8 max-w-3xl mx-auto px-4">
                     {messages.length > 0 && (
                         <Button

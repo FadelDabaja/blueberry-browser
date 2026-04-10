@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ChevronRight, ExternalLink, Eye, CheckCircle2, Filter } from 'lucide-react'
 import { cn } from '@common/lib/utils'
 import type { AuditReport as AuditReportType, AuditCategory, AuditIssue, HighlightRequest } from '../types/audit'
@@ -178,6 +178,17 @@ const CategorySection: React.FC<{
 }> = ({ category, categoryIndex, onHighlight, activeHighlightId }) => {
     const [isExpanded, setIsExpanded] = useState(false)
     const [filtering, setFiltering] = useState(false)
+
+    // Auto-expand when a highlight in this category is clicked on the page
+    useEffect(() => {
+        if (!activeHighlightId || isExpanded) return
+        const matchesCategory = category.issues.some((_, issueIdx) =>
+            category.issues[issueIdx].elements
+                .filter(el => el.selector)
+                .some((_, elIdx) => activeHighlightId === `issue-${categoryIndex}-${issueIdx}-${elIdx}`)
+        )
+        if (matchesCategory) setIsExpanded(true)
+    }, [activeHighlightId])
 
     const handleFilter = (e: React.MouseEvent) => {
         e.stopPropagation()
