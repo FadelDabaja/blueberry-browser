@@ -107,10 +107,10 @@ export const Chat: React.FC = () => {
                     {messages.length === 0 ? (
                         <div className="flex items-center justify-center h-full min-h-[60vh]">
                             <div className="text-center animate-fade-in max-w-md mx-auto gap-2 flex flex-col items-center">
-                                <h3 className="text-2xl">🫐</h3>
-                                <h4 className="text-lg font-semibold text-foreground">Blueberry</h4>
-                                <p className="text-muted-foreground text-sm">
-                                    Ask about the current page, run audits, or chat
+                                <h3 className="text-3xl">🫐</h3>
+                                <h4 className="text-lg font-semibold text-foreground">What can I help with?</h4>
+                                <p className="text-muted-foreground text-xs">
+                                    Analyze the current page, run audits, or ask anything
                                 </p>
                                 <SuggestedPrompts onSelect={sendMessage} />
                             </div>

@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import { marked } from 'marked'
-import { Copy, Check, Globe, FormInput, Accessibility, FileText } from 'lucide-react'
+import { Copy, Check, ShieldCheck, Zap, Search, MousePointerClick } from 'lucide-react'
 import { cn } from '@common/lib/utils'
 import { AuditReportCard } from './AuditReport'
 import { ToolCallStack } from './tool-calls'
@@ -247,31 +247,58 @@ export const LoadingIndicator: React.FC = () => (
     </div>
 )
 
-// Suggested prompt chips for empty state - 2x2 grid
+// Suggested prompt chips for empty state
 export const SuggestedPrompts: React.FC<{ onSelect: (text: string) => void }> = ({ onSelect }) => {
     const prompts = [
-        { label: 'Audit this page', icon: Globe },
-        { label: 'Test the forms', icon: FormInput },
-        { label: 'Check accessibility', icon: Accessibility },
-        { label: 'Summarize this page', icon: FileText },
+        {
+            label: 'Run a full audit',
+            desc: 'Accessibility, SEO, performance & more',
+            prompt: 'Run a full audit on this page',
+            icon: ShieldCheck,
+            color: 'text-blueberry',
+        },
+        {
+            label: 'Check performance',
+            desc: 'Web vitals, load times & resources',
+            prompt: 'Check the performance of this page',
+            icon: Zap,
+            color: 'text-amber-500',
+        },
+        {
+            label: 'Summarize page',
+            desc: 'Key content and structure overview',
+            prompt: 'Summarize this page',
+            icon: Search,
+            color: 'text-emerald-500',
+        },
+        {
+            label: 'Test interactions',
+            desc: 'Forms, links, buttons & inputs',
+            prompt: 'Test the forms and interactive elements on this page',
+            icon: MousePointerClick,
+            color: 'text-rose-500',
+        },
     ]
 
     return (
         <div role="list" className="grid grid-cols-2 gap-2 mt-6 w-full max-w-sm mx-auto">
-            {prompts.map(({ label, icon: Icon }) => (
+            {prompts.map(({ label, desc, prompt, icon: Icon, color }) => (
                 <button
                     key={label}
                     role="listitem"
-                    onClick={() => onSelect(label)}
+                    onClick={() => onSelect(prompt)}
                     className={cn(
-                        "flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm",
-                        "border border-border bg-background hover:bg-muted/50",
-                        "text-muted-foreground hover:text-foreground",
-                        "transition-colors duration-150"
+                        "flex flex-col items-start gap-1 px-3 py-3 rounded-xl text-left",
+                        "border border-border/60 bg-background",
+                        "hover:border-blueberry/30 hover:bg-blueberry/[0.03]",
+                        "transition-all duration-150 group"
                     )}
                 >
-                    <Icon className="size-4 shrink-0" />
-                    <span className="text-left">{label}</span>
+                    <div className="flex items-center gap-2">
+                        <Icon className={cn("size-4 shrink-0", color)} />
+                        <span className="text-sm font-medium text-foreground">{label}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground leading-snug">{desc}</span>
                 </button>
             ))}
         </div>
