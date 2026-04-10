@@ -1,6 +1,6 @@
 # Blueberry Browser
 
-> **⚠️ Disclaimer:** I'm not proud of this codebase! It was built in 3 hours. If you have some time left over in the challenge, feel free to refactor and clean things up!
+An AI-powered browser with built-in agents for web auditing, automation, and intelligent browsing.
 
 https://github.com/user-attachments/assets/bbf939e2-d87c-4c77-ab7d-828259f6d28d
 
@@ -8,78 +8,100 @@ https://github.com/user-attachments/assets/bbf939e2-d87c-4c77-ab7d-828259f6d28d
 
 ## Overview
 
-You are the **CTO of Blueberry Browser**, a Strawberry competitor. Your mission is to add a feature to Blueberry that makes it superior & more promising than Strawberry.
+Blueberry Browser is an Electron-based browser with a deeply integrated AI sidebar. It can browse the web, analyze pages, run accessibility/SEO/performance audits, automate interactions, and orchestrate multi-step tasks — all through natural language.
 
-But your time is limited—Strawberry is about to raise a two billion dollar Series A round from X-Separator, B17Å and Sequoiadendron giganteum Capital.
+## Features
 
-## 🎯 Task
+- **AI Chat Sidebar** — conversational interface powered by OpenAI or Anthropic models with streaming, tool calls, and reasoning output
+- **Multi-Agent Architecture** — main agent delegates to specialized subagents (audit, task manager, researcher) with parallel orchestration
+- **Web Auditing Suite** — 14 tools covering accessibility (axe-core WCAG 2.1), contrast, SEO, DOM quality, forms, performance metrics, and page structure
+- **Interactive Overlays** — highlight audit issues directly on the page with click-to-inspect, filtering by category/severity, and scroll-to-element
+- **Page Automation** — click elements, fill inputs, scroll, wait for dynamic content, take screenshots
+- **Multi-Tab Browsing** — tabbed interface with new-window interception, per-tab navigation history, and a dedicated `blueberry://chat` full-page chat mode
+- **Task & Report Management** — persistent storage for audit reports and task tracking with group support
+- **Diagnostics** — console log capture, network error monitoring, and performance timing
+- **Token Usage Tracking** — real-time context window visualization with automatic compaction at 70% capacity
+- **Verbosity Control** — concise/normal/detailed response modes
+- **Dark Mode** — system-aware theme that syncs across sidebar, topbar, and chat page
+- **Resizable Sidebar** — drag-to-resize with smooth animation
 
-Your job is to **clone this repo** and add a unique feature. Some ideas are listed below.
+## Architecture
 
-It doesn't need to work 100% reliably, or even be completely done. It just has to:
+```
+src/
+  main/                    # Electron main process
+    core/                  #   Window, Tab, EventManager, DiagnosticsService
+    llm/                   #   LLMClient, StreamProcessor, SystemPromptBuilder
+    agents/                #   SubagentFactory, ParallelOrchestrator, FindingsStore
+    tools/                 #   Navigation, Interaction, Audit, Export, Diagnostic, Planner tools
+    config/                #   Constants, model registry, agent configs
+    ui/                    #   SideBar, TopBar
+    storage/               #   HistoryManager, SettingsManager
+    integrations/          #   External service providers
+  preload/                 # Context-isolated IPC bridges (sidebar, topbar, chat)
+  renderer/
+    sidebar/               # React sidebar app (chat, history, settings, reports, tasks)
+    topbar/                # React topbar (tabs, address bar, window controls)
+    chat/                  # Full-page chat mode
+    common/                # Shared components, hooks, styles
+```
 
-- Show that you are creative and can iterate on novel ideas fast
-- Demonstrate good system thinking and code practices  
-- Prove you are a capable full stack and/or LLM dev
+## Setup
 
-Once you're done, we'll book a call where you'll get to present your work!
+### Prerequisites
 
-If it's cracked, we might just have to acquire Blueberry Browser to stay alive 👀👀👀
-
-### ⏰ Time
-
-**1-2 weeks** is ideal for this challenge. This allows you to work over weekends and during evenings in your own time.
-
-### 📋 Rules
-
-You are allowed to vibe code, but make sure you understand everything so we can ask technical questions.
-
-## 💡 Feature Ideas
-
-### **Browsing History Compiler**
-Track the things that the user is doing inside the browser and figure out from a series of browser states what the user is doing, and perhaps how valuable, repetitive tasks can be re-run by an AI agent.
-
-*Tab state series → Prompt for web agent how to reproduce the work*
-
-### **Coding Agent**
-Sidebar coding agent that can create a script that can run on the open tabs.
-
-Maybe useful for filling forms or changing the page's style so it can extract data but present it in a nicer format.
-
-### **Tab Completion Model**
-Predict next action or what to type, like Cursor's tab completion model.
-
-### **Your Own Idea**
-Feel free to implement your own idea!
-
-> Wanted to try transformers.js for a while? This is your chance! 
-
-> Have an old cool web agent framework you built? Let's see if you can merge it into the browser!
-
-> Think you can add a completely new innovation to the browser concept with some insane, over-engineered React? Lfg!
-
-Make sure you can realistically showcase a simple version of it in the timeframe. You can double check with us first if uncertain! :)
-
-## 💬 Tips
-
-Feel free to write to us with questions or send updates during the process—it's a good way to get a feel for working together.
-
-It can also be a good way for us to give feedback if things are heading in the right or wrong direction.
-
----
-
-## 🚀 Project Setup
+- Node.js 18+
+- pnpm
 
 ### Install
+
 ```bash
-$ pnpm install
+pnpm install
+```
+
+### Configure
+
+Create a `.env` file in the project root:
+
+```env
+# Required: at least one API key
+OPENAI_API_KEY=sk-...
+# Or
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Optional
+LLM_PROVIDER=openai        # or "anthropic"
+LLM_MODEL=gpt-4.1-mini     # any supported model
 ```
 
 ### Development
+
 ```bash
-$ pnpm dev
+pnpm dev
 ```
 
-**Add an OpenAI API key to `.env`** in the root folder.
+### Build
 
-Strawberry will reimburse LLM costs, so go crazy! *(Please not more than a few hundred dollars though!)*
+```bash
+# Windows
+pnpm build:win
+
+# macOS
+pnpm build:mac
+
+# Linux
+pnpm build:linux
+```
+
+## Supported Models
+
+| Provider | Models |
+|----------|--------|
+| OpenAI | gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, gpt-4o, gpt-4o-mini, gpt-5.4, gpt-5.4-mini, gpt-5.4-nano, o1, o3, o4-mini |
+| Anthropic | claude-opus-4-6, claude-sonnet-4-5, claude-sonnet-4, claude-haiku-4-5 |
+
+Model can be changed at runtime via the Settings panel.
+
+## License
+
+MIT
