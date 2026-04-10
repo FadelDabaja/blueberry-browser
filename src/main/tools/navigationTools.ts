@@ -17,6 +17,9 @@ export function createNavigationTools(
       }),
       execute: async ({ url }) => {
         try {
+          if (/^(javascript|data|vbscript):/i.test(url)) {
+            return { success: false, error: "Blocked: dangerous URL protocol" };
+          }
           const tab = getTab(getActiveTab);
           let targetUrl = url;
           if (!/^(https?|blueberry):\/\//i.test(targetUrl)) {
@@ -44,6 +47,9 @@ export function createNavigationTools(
       }),
       execute: async ({ url }) => {
         try {
+          if (/^(javascript|data|vbscript):/i.test(url)) {
+            return { success: false, error: "Blocked: dangerous URL protocol" };
+          }
           const win = getWindow?.();
           if (!win) return { success: false, error: "Window not available" };
           let targetUrl = url;

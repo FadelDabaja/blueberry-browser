@@ -24,6 +24,10 @@ export const AddressBar: React.FC = () => {
         if (!url.trim()) return
 
         let finalUrl = url.trim()
+
+        // Block dangerous protocols
+        if (/^(javascript|data|vbscript):/i.test(finalUrl)) return
+
         if (finalUrl.startsWith('blueberry://')) {
             // blueberry://chat needs its own tab with chat preload
             if (finalUrl.startsWith('blueberry://chat')) {
