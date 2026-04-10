@@ -164,7 +164,12 @@ export class Tab {
   }
 
   async runJs(code: string): Promise<any> {
-    return await this.webContentsView.webContents.executeJavaScript(code);
+    try {
+      return await this.webContentsView.webContents.executeJavaScript(code);
+    } catch (error) {
+      const snippet = code.length > 80 ? code.slice(0, 80) + "..." : code;
+      throw new Error(`JS execution failed on tab "${this._title}": ${error instanceof Error ? error.message : String(error)} [code: ${snippet}]`);
+    }
   }
 
   async getTabHtml(): Promise<string> {

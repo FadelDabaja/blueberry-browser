@@ -108,9 +108,13 @@ export class LLMClient {
 
   /** Send an IPC message to the sidebar AND all registered broadcast targets. */
   private broadcast(channel: string, ...args: any[]): void {
-    try { this.webContents.send(channel, ...args); } catch { /* sidebar may be destroyed */ }
+    try { this.webContents.send(channel, ...args); } catch (e: any) {
+      if (!e?.message?.includes('destroyed')) console.warn(`broadcast(${channel}) failed:`, e);
+    }
     for (const wc of this.extraWebContents) {
-      try { wc.send(channel, ...args); } catch { /* tab may be destroyed */ }
+      try { wc.send(channel, ...args); } catch (e: any) {
+        if (!e?.message?.includes('destroyed')) console.warn(`broadcast(${channel}) to extra target failed:`, e);
+      }
     }
   }
 
