@@ -19,7 +19,7 @@ export type TokenAction =
     | { type: 'usage'; payload: TokenUsage & { contextLimit?: number; modelName?: string; resetTotal?: number } }
     | { type: 'reset' }
 
-const tokenInitialState: TokenState = {
+export const tokenInitialState: TokenState = {
     tokenUsage: null,
     totalTokensUsed: 0,
     contextLimit: null,
@@ -27,7 +27,7 @@ const tokenInitialState: TokenState = {
     recentUsage: [],
 }
 
-const tokenReducer = (state: TokenState, action: TokenAction): TokenState => {
+export const tokenReducer = (state: TokenState, action: TokenAction): TokenState => {
     switch (action.type) {
         case 'usage': {
             const { contextLimit, modelName, resetTotal, ...usage } = action.payload

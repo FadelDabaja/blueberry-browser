@@ -11,7 +11,7 @@ export function getReportsDir(): string {
   return dir;
 }
 
-function wrapMarkdownInHtml(title: string, markdown: string): string {
+export function wrapMarkdownInHtml(title: string, markdown: string): string {
   const safeTitle = escapeHtml(title);
 
   // Process inline formatting
@@ -251,7 +251,7 @@ export function listAllReports(): { id: string; title: string; createdAt: string
 
 const UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

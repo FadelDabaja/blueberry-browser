@@ -18,7 +18,7 @@ export type BroadcastFn = (channel: string, ...args: any[]) => void;
 // Tools whose output contains sensitive/large data that should be replaced in IPC
 const SCREENSHOT_TOOLS = new Set(["take_screenshot", "analyze_visual_design"]);
 
-function truncateIpcOutput(toolName: string, output: any): unknown {
+export function truncateIpcOutput(toolName: string, output: any): unknown {
   if (SCREENSHOT_TOOLS.has(toolName)) {
     return { hasScreenshot: true };
   }
@@ -44,7 +44,7 @@ function truncateIpcOutput(toolName: string, output: any): unknown {
   return output;
 }
 
-function unwrapToolResults(
+export function unwrapToolResults(
   toolName: string,
   output: any,
   target: { toolName: string; result: any }[]
@@ -66,7 +66,7 @@ function unwrapToolResults(
   }
 }
 
-function extractFindings(toolName: string, output: any, store: FindingsStore): void {
+export function extractFindings(toolName: string, output: any, store: FindingsStore): void {
   if (!output || !store) return;
 
   if (toolName === "run_contrast_check" && output.failingElements) {
