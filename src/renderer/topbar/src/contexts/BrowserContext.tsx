@@ -42,7 +42,7 @@ export const useBrowser = () => {
 export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [tabs, setTabs] = useState<TabInfo[]>([])
     const [isLoading, setIsLoading] = useState(false)
-    const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([])
+    const navTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const activeTab = useMemo(() => tabs.find(tab => tab.isActive) || null, [tabs])
 
@@ -98,7 +98,8 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
         try {
             await window.topBarAPI.navigateTab(activeTab.id, url)
             // Wait a bit for navigation to start, then refresh tabs to get updated URL
-            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
+            if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+            navTimeoutRef.current = setTimeout(() => refreshTabs(), 500)
         } catch (error) {
             console.error('Failed to navigate:', error)
         } finally {
@@ -111,7 +112,8 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         try {
             await window.topBarAPI.goBack(activeTab.id)
-            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
+            if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+            navTimeoutRef.current = setTimeout(() => refreshTabs(), 500)
         } catch (error) {
             console.error('Failed to go back:', error)
         }
@@ -122,7 +124,8 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         try {
             await window.topBarAPI.goForward(activeTab.id)
-            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
+            if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+            navTimeoutRef.current = setTimeout(() => refreshTabs(), 500)
         } catch (error) {
             console.error('Failed to go forward:', error)
         }
@@ -133,7 +136,8 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         try {
             await window.topBarAPI.reload(activeTab.id)
-            const t = setTimeout(() => refreshTabs(), 500); timeoutRefs.current.push(t)
+            if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+            navTimeoutRef.current = setTimeout(() => refreshTabs(), 500)
         } catch (error) {
             console.error('Failed to reload:', error)
         }
@@ -161,8 +165,7 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
     useEffect(() => {
         refreshTabs()
         return () => {
-            timeoutRefs.current.forEach(t => clearTimeout(t))
-            timeoutRefs.current = []
+            if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
         }
     }, [refreshTabs])
 
@@ -174,12 +177,6 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return () => {
             window.topBarAPI.removeTabsUpdatedListener()
         }
-    }, [refreshTabs])
-
-    // Periodic refresh as fallback to keep tabs in sync
-    useEffect(() => {
-        const interval = setInterval(refreshTabs, 5000)
-        return () => clearInterval(interval)
     }, [refreshTabs])
 
     const value = useMemo<BrowserContextType>(() => ({
