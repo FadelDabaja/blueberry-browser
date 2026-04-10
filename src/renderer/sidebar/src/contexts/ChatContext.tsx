@@ -102,6 +102,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isLoadingRef = useRef(false)
     const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+    // Single setter to keep ref and state in sync
+    const setLoadingState = useCallback((loading: boolean) => {
+        isLoadingRef.current = loading
+        setIsLoading(loading)
+    }, [])
+
     const clearError = useCallback(() => setError(null), [])
 
     // Auto-clear activeHighlightId after 3 seconds so glow fades
@@ -134,15 +140,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const sendMessage = useCallback(async (content: string) => {
         if (isLoadingRef.current) return
-        isLoadingRef.current = true
-        setIsLoading(true)
+        setLoadingState(true)
 
         // Safety timeout: reset isLoading if no response in 60s
         if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current)
         loadingTimeoutRef.current = setTimeout(() => {
             if (isLoadingRef.current) {
-                isLoadingRef.current = false
-                setIsLoading(false)
+                setLoadingState(false)
                 setError('Request timed out — no response received')
             }
         }, 60_000)
@@ -160,22 +164,20 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const message = err instanceof Error ? err.message : 'Failed to send message'
             setError(message)
             console.error('Failed to send message:', err)
-            isLoadingRef.current = false
-            setIsLoading(false)
+            setLoadingState(false)
             if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current)
         }
-    }, [verbosity])
+    }, [verbosity, setLoadingState])
 
     const cancelChat = useCallback(async () => {
         try {
             await window.sidebarAPI.cancelChat()
-            isLoadingRef.current = false
-            setIsLoading(false)
+            setLoadingState(false)
             if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current)
         } catch (error) {
             console.error('Failed to cancel chat:', error)
         }
-    }, [])
+    }, [setLoadingState])
 
     const clearChat = useCallback(async () => {
         try {
@@ -189,13 +191,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSentMessageIds([])
             dispatchToken({ type: 'reset' })
             setStepProgress(null)
-            isLoadingRef.current = false
-            setIsLoading(false)
+            setLoadingState(false)
             if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current)
         } catch (error) {
             console.error('Failed to clear chat:', error)
         }
-    }, [])
+    }, [setLoadingState])
 
     const getPageContent = useCallback(async () => {
         try {

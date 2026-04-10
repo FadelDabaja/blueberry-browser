@@ -20,6 +20,7 @@ export const ChatInput: React.FC<{
     const [value, setValue] = useState('')
     const [isFocused, setIsFocused] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const submittingRef = useRef(false)
 
     // Auto-resize textarea
     useEffect(() => {
@@ -32,12 +33,15 @@ export const ChatInput: React.FC<{
     }, [value])
 
     const handleSubmit = () => {
-        if (value.trim() && !disabled) {
+        if (value.trim() && !disabled && !submittingRef.current) {
+            submittingRef.current = true
             onSend(value.trim())
             setValue('')
             if (textareaRef.current) {
                 textareaRef.current.style.height = '24px'
             }
+            // Reset guard after microtask to allow next submit
+            queueMicrotask(() => { submittingRef.current = false })
         }
     }
 
