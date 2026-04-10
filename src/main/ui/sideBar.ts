@@ -62,9 +62,9 @@ export class SideBar {
     }
 
     // Log renderer errors/crashes to main process console
-    webContentsView.webContents.on("console-message", (_event, level, message, line, sourceId) => {
-      if (level >= 2) { // warnings and errors only
-        console.error(`[Sidebar renderer] ${message} (${sourceId}:${line})`);
+    webContentsView.webContents.on("console-message", (event) => {
+      if (event.level >= 2) { // warnings and errors only
+        console.error(`[Sidebar renderer] ${event.message} (${event.sourceId}:${event.line})`);
       }
     });
     webContentsView.webContents.on("render-process-gone", (_event, details) => {

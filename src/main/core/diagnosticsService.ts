@@ -100,15 +100,15 @@ export class DiagnosticsService {
     this.consoleLogs.set(tabId, new RingBuffer<ConsoleEntry>(DIAGNOSTICS_CONSOLE_BUFFER_SIZE));
     this.networkErrors.set(tabId, new RingBuffer<NetworkEntry>(DIAGNOSTICS_NETWORK_BUFFER_SIZE));
 
-    tab.webContents.on("console-message", (_event, levelNum, message, line, sourceId) => {
+    tab.webContents.on("console-message", (event) => {
       const buffer = this.consoleLogs.get(tabId);
       if (!buffer) return;
       buffer.push({
         timestamp: Date.now(),
-        level: CONSOLE_LEVEL_MAP[levelNum] ?? "info",
-        message,
-        line,
-        sourceId,
+        level: CONSOLE_LEVEL_MAP[event.level] ?? "info",
+        message: event.message,
+        line: event.line,
+        sourceId: event.sourceId,
       });
     });
   }

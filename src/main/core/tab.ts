@@ -96,7 +96,8 @@ export class Tab {
 
     // Forward highlight click events from injected overlay scripts to sidebar
     const HIGHLIGHT_CLICK_PREFIX = "__BB_HIGHLIGHT_CLICK__";
-    this.webContentsView.webContents.on("console-message", (_event, _level, message) => {
+    this.webContentsView.webContents.on("console-message", (event) => {
+      const message = event.message;
       if (message.startsWith(HIGHLIGHT_CLICK_PREFIX)) {
         try {
           const data = JSON.parse(message.slice(HIGHLIGHT_CLICK_PREFIX.length));
